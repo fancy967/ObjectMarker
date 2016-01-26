@@ -1,0 +1,76 @@
+.left-col, .right-col {
+    margin-top: 15px;
+}
+
+.right-col {
+    position: fixed;
+    top: 0;
+    right: 0
+}
+
+.btns{
+    margin-bottom: 15px;
+}
+
+#fileLists{
+    max-height: 400px;
+    overflow: auto;
+    overflow-x:hidden
+}
+
+.list-group-item{
+   padding: 5px 10px;
+}
+
+#img-section{
+    position: relative;
+}
+
+.img-selection{
+    position:absolute;
+    background:#EFEFEF;
+    opacity: 0.6;
+}
+
+#text-dialog{
+    position:absolute;
+    display: none;
+    z-index: 99;
+    padding: 5px;
+    background:#EFEFEF;
+    border-radius:3px;
+}
+
+#selection-text{
+    width: 100%;
+}
+
+.dialog-btns-left{
+    margin-top: 3px;
+    float: left;
+}
+
+.dialog-btns-right{
+    margin-top: 7px;
+    float: right;
+}
+
+.form-horizontal .checkbox{
+    padding-top: 2px;
+    min-height: 0;
+}
+
+select.btn-mini {
+    height: auto;
+    line-height: 10px;
+}
+
+/* this is optional (see below) */
+select.btn {
+    -webkit-appearance: button;
+}
+
+select.btn-mini + .caret {
+    margin-left: -20px;
+    margin-top: 9px;
+}
