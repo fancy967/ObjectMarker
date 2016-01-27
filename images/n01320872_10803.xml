@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<annotation>
+  <filename>n01320872_10803.JPEG</filename>
+  <size>
+    <width>469</width>
+    <height>400</height>
+  </size>
+  <object>
+    <class>text</class>
+    <difficult>false</difficult>
+    <x>185</x>
+    <y>376</y>
+    <width>280</width>
+    <height>17</height>
+  </object>
+</annotation>

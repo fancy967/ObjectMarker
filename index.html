@@ -16,34 +16,25 @@
       <span class="glyphicon glyphicon-picture"></span> Image Preview
     </div>
     <div class="panel-body">
-      <div id="img-section">
+      <div class="div-img" id="div-img">
         <img src="" width="100%" id="img" ondragstart="return false;"/>
-
-        <div class="form-horizontal" id="text-dialog">
-          <input type="text" class="form-control input-sm" id="selection-text">
-
-          <div class="form-inline dialog-btns-left">
-            <select class="btn btn-mini" id="class-sel">
+        <div class="form-horizontal dlg-marker" id="dlg-marker">
+          <div class="form-inline btns-left">
+            <select class="btn sel-class" id="sel-class">
               <option>text</option>
               <option>CN</option>
               <option>EN</option>
               <option>Number</option>
             </select>
-
             <div class="checkbox">
               <label>
-                <input type="checkbox" id="diff-check"> Hard?
+                <input type="checkbox" id="ckb-dif"> Difficult?
               </label>
             </div>
           </div>
-          <div class="form-inline dialog-btns-right">
-            <button class="btn btn-info btn-xs" id="undo-text">
-              <span class="glyphicon glyphicon-share-alt"></span>
-            </button>
-            <button class="btn btn-danger btn-xs" id="remove-selection">
-              <span class="glyphicon glyphicon-remove-sign"></span>
-            </button>
-          </div>
+          <button class="btn btn-danger btn-delete" id="btn-delete">
+            <span class="glyphicon glyphicon-remove-sign"></span>
+          </button>
         </div>
       </div>
     </div>
@@ -55,20 +46,20 @@
       <span class="glyphicon glyphicon-cog"></span> Resource Panel
     </div>
     <div class="panel-body">
-      <div class="form-inline btns">
-        <button class="btn btn-default" id="open"><span class="glyphicon glyphicon-folder-open"></span> Open Directory
+      <div class="form-inline btns-ctrl">
+        <button class="btn btn-default" id="btn-open"><span class="glyphicon glyphicon-folder-open"></span> Open Directory
         </button>
-        <button class="btn btn-default" id="reload"><span class="glyphicon glyphicon-refresh"></span> Reload</button>
-        <button class="btn btn-default" id="backward"><span class="glyphicon glyphicon-fast-backward"></span>
+        <button class="btn btn-default" id="btn-reload"><span class="glyphicon glyphicon-refresh"></span> Reload</button>
+        <button class="btn btn-default" id="btn-backward"><span class="glyphicon glyphicon-fast-backward"></span>
         </button>
-        <button class="btn btn-default" id="leftward"><span class="glyphicon glyphicon-chevron-left"></span>
+        <button class="btn btn-default" id="btn-leftward"><span class="glyphicon glyphicon-chevron-left"></span>
         </button>
-        <button class="btn btn-default" id="rightward"><span class="glyphicon glyphicon-chevron-right"></span>
+        <button class="btn btn-default" id="btn-rightward"><span class="glyphicon glyphicon-chevron-right"></span>
         </button>
-        <button class="btn btn-default" id="forward"><span class="glyphicon glyphicon-fast-forward"></span>
+        <button class="btn btn-default" id="btn-forward"><span class="glyphicon glyphicon-fast-forward"></span>
         </button>
       </div>
-      <div class="list-group" id="fileLists">
+      <div class="list-group list-files" id="list-files">
         <li class="list-group-item">No images yet!</li>
       </div>
     </div>

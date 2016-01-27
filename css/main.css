@@ -8,11 +8,11 @@
     right: 0
 }
 
-.btns{
+.btns-ctrl {
     margin-bottom: 15px;
 }
 
-#fileLists{
+.list-files {
     max-height: 400px;
     overflow: auto;
     overflow-x:hidden
@@ -22,17 +22,18 @@
    padding: 5px 10px;
 }
 
-#img-section{
+.div-img {
     position: relative;
 }
 
-.img-selection{
+.img-bndbox{
     position:absolute;
     background:#EFEFEF;
     opacity: 0.6;
 }
 
-#text-dialog{
+.dlg-marker {
+    width: 250px;
     position:absolute;
     display: none;
     z-index: 99;
@@ -40,23 +41,21 @@
     background:#EFEFEF;
     border-radius:3px;
 }
-
-#selection-text{
-    width: 100%;
+.sel-class, .checkbox{
+    font-size: 18px;
 }
 
-.dialog-btns-left{
-    margin-top: 3px;
+.btns-left {
     float: left;
 }
 
-.dialog-btns-right{
-    margin-top: 7px;
+.btn-delete {
+    margin-top: 1px;
     float: right;
 }
 
 .form-horizontal .checkbox{
-    padding-top: 2px;
+    padding-top: 0px;
     min-height: 0;
 }
 
