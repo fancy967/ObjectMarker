@@ -10,7 +10,7 @@
   <script src="js/bootstrap.js"></script>
 </head>
 <body>
-<div class="col-md-7 left-col">
+<div class="col-md-8 left-col">
   <div class="panel panel-default">
     <div class="panel-heading">
       <span class="glyphicon glyphicon-picture"></span> Image Preview
@@ -21,10 +21,7 @@
         <div class="form-horizontal dlg-marker" id="dlg-marker">
           <div class="form-inline btns-left">
             <select class="btn sel-class" id="sel-class">
-              <option>text</option>
-              <option>CN</option>
-              <option>EN</option>
-              <option>Number</option>
+              <option value="none">Classes</option>
             </select>
             <div class="checkbox">
               <label>
@@ -40,14 +37,14 @@
     </div>
   </div>
 </div>
-<div class="col-md-5 right-col">
+<div class="col-md-4 right-col">
   <div class="panel panel-default">
     <div class="panel-heading">
       <span class="glyphicon glyphicon-cog"></span> Resource Panel
     </div>
     <div class="panel-body">
       <div class="form-inline btns-ctrl">
-        <button class="btn btn-default" id="btn-open"><span class="glyphicon glyphicon-folder-open"></span> Open Directory
+        <button class="btn btn-default" id="btn-open"><span class="glyphicon glyphicon-folder-open"></span> Open
         </button>
         <button class="btn btn-default" id="btn-reload"><span class="glyphicon glyphicon-refresh"></span> Reload</button>
         <button class="btn btn-default" id="btn-backward"><span class="glyphicon glyphicon-fast-backward"></span>
@@ -62,6 +59,13 @@
       <div class="list-group list-files" id="list-files">
         <li class="list-group-item">No images yet!</li>
       </div>
+    </div>
+  </div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <span class="glyphicon glyphicon-cog"></span> Marker Panel
+    </div>
+    <div class="panel-body">
     </div>
   </div>
 </div>

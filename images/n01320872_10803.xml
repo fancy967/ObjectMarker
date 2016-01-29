@@ -6,11 +6,11 @@
     <height>400</height>
   </size>
   <object>
-    <class>text</class>
+    <class>dog</class>
     <difficult>false</difficult>
-    <x>185</x>
-    <y>376</y>
-    <width>280</width>
-    <height>17</height>
+    <x>64</x>
+    <y>11</y>
+    <width>336</width>
+    <height>382</height>
   </object>
 </annotation>
