@@ -18,7 +18,8 @@
     position: relative;
     max-height: 400px;
     overflow: auto;
-    overflow-x:hidden
+    overflow-x:hidden;
+    margin-bottom: 0px;
 }
 
 .list-group-item{
@@ -60,6 +61,15 @@
 .form-horizontal .checkbox{
     padding-top: 0px;
     min-height: 0;
+}
+
+.btn-group{
+    margin-right: 5px;
+}
+
+.btn-group > .btn-danger {
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 select.btn-mini {

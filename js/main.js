@@ -4,7 +4,9 @@ var g_path = null;
 var g_item = null;
 var g_div = null;
 var g_modify = false;
+var bndbox_i = 0;
 const remote = require('electron').remote;
+const EXT = 'jpeg';
 
 $(document).ready(function () {
 
@@ -26,7 +28,6 @@ $(document).ready(function () {
         clearTimeout(tID);
         tID = setTimeout(function(){
           loadMarkers(g_item);
-          console.log('Here');
         }, 150);
       }
     });
@@ -35,8 +36,6 @@ $(document).ready(function () {
       saveMarkers();
     });
   }
-
-
 
   $('#btn-open').click(function () {
     const dialog = remote.require('dialog');
@@ -51,6 +50,8 @@ $(document).ready(function () {
   $('#btn-delete').click(function () {
     if (g_div) {
       $(g_div).remove();
+      var b_id = g_div.id;
+      $('#div_objects button.btn-default[bndbox="' + b_id + '"]').parent().remove();
       g_div = null;
       $('#dlg-marker').hide();
       g_modify = true;
@@ -88,11 +89,11 @@ $(document).ready(function () {
       if (!$(e.target).hasClass('active'))
         $(e.target).addClass('active');
       g_item = $(e.target);
-      if ($('#list-files').scrollTop() > $('#list-files a.active').position().top &&
+      if ($('#list-files').scrollTop() > $('#list-files a.active').position().top ||
         $('#list-files').scrollTop() + $('#list-files').height() < $('#list-files a.active').position().top){
         $('#list-files').animate({
-          scrollTop: $('#list-files').scrollTop() + $('#list-files a.active').position().top
-          - $('#list-files').height()/2 + $('#list-files a.active').height()/2
+          scrollTop: $('#list-files a.active').position().top + $('#list-files a.active').height()/2
+          - $('#list-files').height()/2
         }, 'fast');
       }
     }
@@ -105,7 +106,28 @@ $(document).ready(function () {
 
   $('#sel-class').change(function () {
     $(g_div).attr('data-sel', $('#sel-class').val());
+    var b_id = g_div.id;
+    $('#div_objects button.btn-default[bndbox="' + b_id + '"]').html($('#sel-class').val());
     g_modify = true;
+  });
+
+  $('#div_objects').click(function (e){
+    if (e.target.tagName === 'BUTTON'){
+      g_div = document.getElementById($(e.target).attr('bndbox'));
+      if ($(e.target).hasClass('btn-danger')){
+        $('#btn-delete').click();
+        $(e.target).parent().slideUp(300, function() {
+          $(e.target).parent().remove();
+        });
+      }else if ($(e.target).hasClass('active')){
+        $(e.target).removeClass('active');
+        $(g_div).hide();
+      }else{
+        $(e.target).addClass('active');
+        $(g_div).show();
+        $('#' + bndbox).click();
+      }
+    }
   });
 
   var startX, startY;
@@ -117,6 +139,7 @@ $(document).ready(function () {
     startY = e.offsetY;
     cDiv = document.createElement('div');
     cDiv.className = 'img-bndbox';
+    cDiv.id = 'bndbox-' + (bndbox_i + 1);
     cDiv.style.left = startX + 'px';
     cDiv.style.top = startY + 'px';
     $('#div-img').append(cDiv);
@@ -147,6 +170,10 @@ $(document).ready(function () {
     }
     g_div = cDiv;
     cDiv = null;
+    bndbox_i++;
+    $('#div_objects').append('<div class="btn-group">' +
+      '<button type="button" bndbox="' + 'bndbox-' + bndbox_i + '" class="btn btn-default btn-sm active"></button>' +
+      '<button type="button" bndbox="' + 'bndbox-' + bndbox_i + '" class="btn btn-sm btn-danger">X</button></div>');
     $('#ckb-dif').get(0).checked = false;
     $('#sel-class').prop('selectedIndex', 0);
     $('#ckb-dif').trigger('change');
@@ -165,13 +192,15 @@ function loadFiles(dir) {
   if (dir == null) return;
   g_path = dir;
   var fs = require('fs');
+  var c = 0;
   fs.readdir(dir.toString(), function (err, files) {
     addNode(0);
     var flag = false;
     for (var i = 0, l = files.length; i < l; i++) {
-      if (files[i].substring(files[i].lastIndexOf('.') + 1, files[i].length).toLowerCase() == 'jpeg') {
+      if (files[i].substring(files[i].lastIndexOf('.') + 1, files[i].length).toLowerCase() == EXT) {
         var xmlPath = dir.toString() + '/' + files[i].substring(0, files[i].lastIndexOf('.')) + '.xml';
         flag = true;
+        c++;
         (function (fileName) {
           fs.stat(xmlPath, function (err, stat) {
             if (err == null)
@@ -183,10 +212,12 @@ function loadFiles(dir) {
       }
     }
     if (!flag) addNode(-1);
+    $('#label_resources').html(c);
   });
   $('#div-img .img-bndbox').remove();
   $('#dlg-marker').hide();
   $('#img')[0].src = '';
+  $('#label_image').html('Null');
 }
 
 function addNode(fileName, check) {
@@ -228,7 +259,7 @@ function saveXML(file) {
   var builder = new xml2js.Builder({rootName: 'annotation'});
   var ratio = $('#img')[0].naturalWidth / $('#img')[0].width;
   var obj = {
-    filename: file,
+    filename: file.substring(0, file.lastIndexOf('.')),
     size: {
       width: $('#img')[0].naturalWidth,
       height: $('#img')[0].naturalHeight
@@ -265,6 +296,7 @@ function readXML(file) {
       var ratio = $('#img')[0].width / $('#img')[0].naturalWidth;
       result.annotation.object.forEach(function (node) {
         var div = document.createElement('div');
+        div.id = 'bndbox-' + (++bndbox_i);
         div.className = 'img-bndbox';
         div.style.left = Math.round(node.x * ratio) + 'px';
         div.style.top = Math.round(node.y * ratio) + 'px';
@@ -273,7 +305,11 @@ function readXML(file) {
         div.setAttribute('data-sel', node.class);
         div.setAttribute('data-dif', node.difficult);
         $('#div-img').append(div);
+        $('#div_objects').append('<div class="btn-group">' +
+          '<button type="button" bndbox="' + 'bndbox-' + bndbox_i + '" class="btn btn-default btn-sm active">' + node.class + '</button>' +
+          '<button type="button" bndbox="' + 'bndbox-' + bndbox_i + '" class="btn btn-sm btn-danger">X</button></div>');
       });
+      $('#label_objects').html(result.annotation.object.length);
       g_modify = false;
     });
   });
@@ -306,10 +342,14 @@ function loadMarkers(e){
   $('#div-img .img-bndbox').remove();
   $('#dlg-marker').hide();
   $('#img')[0].src = g_path + '/' + e.html();
+  $('#label_image').html(e.html());
+  $('#div_objects').html('');
   if (e.hasClass('list-group-item-success')) {
     $('#img').load(function () {
       readXML(e.html());
       $('#img').unbind('load');
     });
+  }else{
+    $('#label_objects').html(0);
   }
 }
