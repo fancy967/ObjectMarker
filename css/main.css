@@ -22,6 +22,14 @@
     margin-bottom: 0px;
 }
 
+.div_objects {
+    position: relative;
+    max-height: 130px;
+    overflow: auto;
+    overflow-x:hidden;
+    margin-bottom: 0px;
+}
+
 .list-group-item{
    padding: 5px 10px;
 }
@@ -44,6 +52,7 @@
     padding: 5px;
     background:#EFEFEF;
     border-radius:3px;
+    z-index: 999;
 }
 .sel-class, .checkbox{
     font-size: 18px;
@@ -58,6 +67,10 @@
     float: right;
 }
 
+.del_object{
+    color: red;
+}
+
 .form-horizontal .checkbox{
     padding-top: 0px;
     min-height: 0;
@@ -65,6 +78,7 @@
 
 .btn-group{
     margin-right: 5px;
+    margin-bottom: 5px;
 }
 
 .btn-group > .btn-danger {

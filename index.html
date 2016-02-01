@@ -10,6 +10,23 @@
   <script src="js/bootstrap.js"></script>
 </head>
 <body>
+<div class="modal fade" id="confirm-delete">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Confirm Delete</h4>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure want to delete object: <span class="del_object" id="del_object">Null</span></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="btn_confirm">Delete</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 <div class="col-md-8 left-col">
   <div class="panel panel-default">
     <div class="panel-heading">
@@ -30,7 +47,7 @@
               </label>
             </div>
           </div>
-          <button class="btn btn-danger btn-delete" id="btn-delete">
+          <button class="btn btn-danger btn-delete" data-toggle="modal" data-target="#confirm-delete">
             <span class="glyphicon glyphicon-remove-sign"></span>
           </button>
         </div>
@@ -68,7 +85,9 @@
       <span class="glyphicon glyphicon-cog"></span> Markered Objects
       (<span id="label_objects">0</span>)
     </div>
-    <div class="panel-body" id="div_objects">
+    <div class="panel-body">
+      <div class="div_objects" id="div_objects">
+      </div>
     </div>
   </div>
 </div>
