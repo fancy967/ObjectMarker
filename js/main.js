@@ -5,7 +5,7 @@ var g_item = null;
 var g_div = null;
 var bndbox_i = 0;
 const remote = require('electron').remote;
-const EXT = ['jpeg', 'jpg'];
+const EXT = ['jpeg', 'jpg', 'png'];
 
 $(document).ready(function () {
 
@@ -29,6 +29,7 @@ $(document).ready(function () {
       $('#sel-class').append('<option value="' + classes[i].replace(/(^\s*)|(\s*$)/g, '') + '">' + classes[i] + '</option>');
     }
   });
+
 
   const win = remote.getCurrentWindow();
   var tID;
@@ -204,13 +205,17 @@ $(document).ready(function () {
     $(g_div).attr('data-dif', 0);
     $('#sel-class').prop('selectedIndex', 0);
     $('#sel-class').trigger('change');
-    showTextDialog();
+    var x = e.offsetX + e.target.offsetLeft;
+    var y = e.offsetY + e.target.offsetTop;
+    showTextDialog(x,y);
   });
 
-  $(document).on("click", '.img-bndbox', function () {
+  $(document).on("click", '.img-bndbox', function (e) {
     if (cDiv) return;
     g_div = this;
-    showTextDialog();
+    var x = e.offsetX + e.target.offsetLeft;
+    var y = e.offsetY + e.target.offsetTop;
+    showTextDialog(x, y);
   });
 });
 
@@ -261,22 +266,13 @@ function addNode(fileName, check) {
   }
 }
 
-function showTextDialog() {
+function showTextDialog(x, y) {
   $('#dlg-marker').hide();
-  if ($(g_div).position().left + $('#dlg-marker').outerWidth() > $('#div-img').width()) {
-    $('#dlg-marker').css('right', $('#div-img').width() - $(g_div).position().left - $(g_div).width() + 'px');
-    $('#dlg-marker').css('left', '');
-  } else {
-    $('#dlg-marker').css('right', '');
-    $('#dlg-marker').css('left', $(g_div).css('left'));
-  }
-  if ($(g_div).position().top - 8 >= $('#dlg-marker').outerHeight()) {
-    $('#dlg-marker').css('top', $(g_div).position().top - 4 - $('#dlg-marker').outerHeight() + 'px');
-  } else if ($('#div-img').height() - $(g_div).position().top - $(g_div).height() - $('#dlg-marker').outerHeight() >= 8) {
-    $('#dlg-marker').css('top', $(g_div).position().top + $(g_div).height() + 4 + 'px');
-  } else {
-    $('#dlg-marker').css('top', $(g_div).position().top + $(g_div).height() - $('#dlg-marker').outerHeight() + 'px');
-  }
+  $('#dlg-marker').css('left', (x + $('#dlg-marker').outerWidth() <= $('#div-img').width() ?
+      x : $('#div-img').width() - $('#dlg-marker').outerWidth()) + 'px');
+  $('#dlg-marker').css('top', (y + $('#dlg-marker').outerHeight() <= $('#div-img').height() ?
+    y : y - $('#dlg-marker').outerHeight()) + 'px');
+
   $('#ckb-dif').get(0).checked = $(g_div).attr('data-dif') == '1' ? true : false;
   $('#sel-class').val($(g_div).attr('data-sel'));
   $('#dlg-marker').fadeIn('fast');
@@ -331,8 +327,11 @@ function readXML(file) {
         div.className = 'img-bndbox';
         div.style.left = Math.round(node.bndbox[0].xmin * ratio) + 'px';
         div.style.top = Math.round(node.bndbox[0].ymin * ratio) + 'px';
-        div.style.width = Math.round((node.bndbox[0].xmax - node.bndbox[0].xmin) * ratio) + 'px';
-        div.style.height = Math.round((node.bndbox[0].ymax - node.bndbox[0].ymin) * ratio) + 'px';
+        var w = Math.round((node.bndbox[0].xmax - node.bndbox[0].xmin) * ratio);
+        var h = Math.round((node.bndbox[0].ymax - node.bndbox[0].ymin) * ratio);
+        div.style.width = w + 'px';
+        div.style.height = h + 'px';
+        div.style.zIndex = Math.round((1 - w * h / ($('#img')[0].width * $('#img')[0].height)) * 100);
         div.setAttribute('data-sel', node.name);
         div.setAttribute('data-dif', node.difficult);
         $('#div-img').append(div);

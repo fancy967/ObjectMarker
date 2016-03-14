@@ -44,11 +44,16 @@
     opacity: 0.6;
 }
 
+#img{
+    position: relative;
+    top: 0;
+    left: 0;
+}
+
 .dlg-marker {
     width: 300px;
     position:absolute;
     display: none;
-    z-index: 99;
     padding: 5px;
     background:#EFEFEF;
     border-radius:3px;
@@ -63,7 +68,7 @@
 }
 
 .btn-delete {
-    margin-top: 1px;
+    margin-top: 3px;
     float: right;
 }
 
