@@ -116,9 +116,9 @@ $(document).ready(function () {
 
   $('#confirm-delete').on('show.bs.modal', function (e) {
     if (g_div) {
+      $('#dlg-marker').hide();
       $('#del_object').html($(g_div).attr('data-sel'));
     } else {
-      console.log('Stop');
       e.preventDefault();
     }
   });
@@ -217,6 +217,14 @@ $(document).ready(function () {
     var y = e.offsetY + e.target.offsetTop;
     showTextDialog(x, y);
   });
+
+  $(document).on('showalert', '.alert', function(){
+    window.setTimeout($.proxy(function() {
+      $(this).fadeTo(500, 0).slideUp(500, function(){
+        $(this).remove();
+      });
+    }, this), 1000);
+  })
 });
 
 function loadFiles(dir) {
@@ -308,7 +316,8 @@ function saveXML(file) {
   var xml = builder.buildObject(obj);
   fs.writeFile(xmlURL, xml, function (err) {
     if (err) throw err;
-    console.log(xmlURL + 'is saved!');
+    //console.log(xmlURL + 'is saved!');
+    showTips('Saved!');
   });
 }
 
@@ -358,7 +367,9 @@ function saveMarkers() {
       var fs = require('fs');
       fs.unlink(xmlPath, function (err) {
         //if (err) throw err;
-        if (!err) console.log('successfully deleted ' + xmlPath);
+        if (!err)
+          //console.log('successfully deleted ' + xmlPath);
+          showTips('Deleted!');
       });
       if (g_item.hasClass('list-group-item-success'))
         g_item.removeClass('list-group-item-success');
@@ -383,4 +394,8 @@ function loadMarkers(e) {
   } else {
     $('#label_objects').html(0);
   }
+}
+
+function showTips(t) {
+  $('<div class="alert alert-warning" role="alert">' + t + '</div>').prependTo('#tips').trigger('showalert');
 }
