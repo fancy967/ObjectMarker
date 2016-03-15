@@ -1,24 +1,27 @@
 'use strict';
 
-var g_path = null;
-var g_item = null;
-var g_div = null;
-var bndbox_i = 0;
-const remote = require('electron').remote;
-const EXT = ['jpeg', 'jpg', 'png'];
+var g_path = null,
+  g_item = null,
+  g_div = null,
+  g_xml = null,
+  bndbox_i = 0;
+const REMOTE = require('electron').remote,
+  EXT = ['jpeg', 'jpg', 'png'],
+  ALERT_TYPE = ['success', 'info', 'warning', 'danger'];
 
 $(document).ready(function () {
 
   var fs = require('fs');
-  var path_class = 'classes.txt';
+  var path_class = 'clasdses.txt';
   fs.readFile(path_class, function (err, data) {
     if (!data) {
       path_class = process.resourcesPath + '/app/' + path_class;
       try {
         data = fs.readFileSync(path_class).toString();
-      }catch (e){
+      } catch (e) {
         if (e.code === 'ENOENT') {
-          alert('File not found!');
+          showTips('Category file not found!', 3);
+          return;
         } else {
           throw e;
         }
@@ -26,12 +29,12 @@ $(document).ready(function () {
     }
     var classes = data.toString().split(/\r?\n/ig);
     for (var i = 0; i < classes.length; i++) {
-      $('#sel-class').append('<option value="' + classes[i].replace(/(^\s*)|(\s*$)/g, '') + '">' + classes[i] + '</option>');
+      $('#sel-class').append('<option value="' + classes[i].replace(/\s+/g, '') + '">' + classes[i] + '</option>');
     }
   });
 
 
-  const win = remote.getCurrentWindow();
+  const win = REMOTE.getCurrentWindow();
   var tID;
   if (win) {
     var h = win.getSize()[1];
@@ -53,7 +56,7 @@ $(document).ready(function () {
   }
 
   $('#btn-open').click(function () {
-    const dialog = remote.require('dialog');
+    const dialog = REMOTE.require('dialog');
     dialog.showOpenDialog({properties: ['openDirectory']}, loadFiles);
   });
 
@@ -104,6 +107,11 @@ $(document).ready(function () {
 
   $('#ckb-dif').change(function () {
     $(g_div).attr('data-dif', $('#ckb-dif').get(0).checked ? 1 : 0);
+    for (var i = 0, l = g_xml.object.length; i < l; i++) {
+      if (g_xml.object[i].id == g_div.id) {
+        g_xml.object[i].difficult = $(g_div).attr('data-dif');
+      }
+    }
     saveMarkers();
   });
 
@@ -111,6 +119,11 @@ $(document).ready(function () {
     $(g_div).attr('data-sel', $('#sel-class').val());
     var b_id = g_div.id;
     $('#div_objects button.btn-default[bndbox="' + b_id + '"]').html($('#sel-class').val());
+    for (var i = 0, l = g_xml.object.length; i < l; i++) {
+      if (g_xml.object[i].id == g_div.id) {
+        g_xml.object[i].name = $(g_div).attr('data-sel');
+      }
+    }
     saveMarkers();
   });
 
@@ -130,6 +143,11 @@ $(document).ready(function () {
   $('#btn_confirm').click(function () {
     if (g_div) {
       $('#div_objects button.btn-default[bndbox="' + g_div.id + '"]').parent().remove();
+      for (var i = 0, l = g_xml.object.length; i < l; i++) {
+        if (g_xml.object[i].id == g_div.id) {
+          g_xml.object = g_xml.object.slice(i, 1);
+        }
+      }
       $(g_div).remove();
       g_div = null;
       $('#dlg-marker').hide();
@@ -153,6 +171,15 @@ $(document).ready(function () {
       }
     }
   });
+
+  $('#btn-hide').click(function () {
+    if (g_div) {
+      $('#div_objects button.btn-default[bndbox="' + g_div.id + '"]').removeClass('active');
+      $(g_div).hide();
+      $('#dlg-marker').hide();
+    }
+  });
+
 
   var startX, startY;
   var cDiv = null;
@@ -201,26 +228,57 @@ $(document).ready(function () {
     $('#div_objects').append('<div class="btn-group"><button type="button" bndbox="bndbox-' + bndbox_i +
       '" class="btn btn-default btn-sm active"></button><button type="button" bndbox="bndbox-' + bndbox_i +
       '" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete">X</button></div>');
+
+    if (g_xml == null) {
+      g_xml = {
+        filename: file,
+        size: {
+          width: $('#img')[0].naturalWidth,
+          height: $('#img')[0].naturalHeight
+        },
+        object: []
+      };
+    }
+
+    var ratio = $('#img')[0].naturalWidth / $('#img')[0].width;
     $('#ckb-dif').get(0).checked = false;
     $(g_div).attr('data-dif', 0);
     $('#sel-class').prop('selectedIndex', 0);
-    $('#sel-class').trigger('change');
-    var x = e.offsetX + e.target.offsetLeft;
-    var y = e.offsetY + e.target.offsetTop;
-    showTextDialog(x,y);
-  });
+    $(g_div).attr('data-sel', $('#sel-class').val());
+    var node = {
+      name: $(g_div).attr('data-sel'),
+      difficult: $(g_div).attr('data-dif'),
+      bndbox: {
+        xmin: Math.round($(g_div).position().left * ratio),
+        ymin: Math.round($(g_div).position().top * ratio),
+        xmax: Math.round(($(g_div).position().left + $(g_div).width()) * ratio),
+        ymax: Math.round(($(g_div).position().top + $(g_div).height()) * ratio)
+      }
+    };
+    g_xml.object.push(node);
 
-  $(document).on("click", '.img-bndbox', function (e) {
-    if (cDiv) return;
-    g_div = this;
     var x = e.offsetX + e.target.offsetLeft;
     var y = e.offsetY + e.target.offsetTop;
     showTextDialog(x, y);
   });
 
-  $(document).on('showalert', '.alert', function(){
-    window.setTimeout($.proxy(function() {
-      $(this).fadeTo(500, 0).slideUp(500, function(){
+  $(document).on("click", '.img-bndbox', function (e) {
+    if (cDiv) return;
+    g_div = this;
+    var x, y;
+    if (isNaN(e.offsetX)) {
+      x = $(g_div).width() * 0.5 + g_div.offsetLeft;
+      y = $(g_div).height() * 0.5 + g_div.offsetTop;
+    } else {
+      x = e.offsetX + e.target.offsetLeft;
+      y = e.offsetY + e.target.offsetTop;
+    }
+    showTextDialog(x, y);
+  });
+
+  $(document).on('showalert', '.alert', function () {
+    window.setTimeout($.proxy(function () {
+      $(this).fadeTo(500, 0).slideUp(500, function () {
         $(this).remove();
       });
     }, this), 1000);
@@ -260,6 +318,7 @@ function loadFiles(dir) {
   $('#label_image').html('Null');
   $('#label_objects').html('0');
   $('#div_objects').html('');
+  bndbox_i = 0;
 }
 
 function addNode(fileName, check) {
@@ -279,7 +338,7 @@ function showTextDialog(x, y) {
   $('#dlg-marker').css('left', (x + $('#dlg-marker').outerWidth() <= $('#div-img').width() ?
       x : $('#div-img').width() - $('#dlg-marker').outerWidth()) + 'px');
   $('#dlg-marker').css('top', (y + $('#dlg-marker').outerHeight() <= $('#div-img').height() ?
-    y : y - $('#dlg-marker').outerHeight()) + 'px');
+      y : y - $('#dlg-marker').outerHeight()) + 'px');
 
   $('#ckb-dif').get(0).checked = $(g_div).attr('data-dif') == '1' ? true : false;
   $('#sel-class').val($(g_div).attr('data-sel'));
@@ -287,52 +346,36 @@ function showTextDialog(x, y) {
 }
 
 function saveXML(file) {
+  if (g_xml == null) {
+    showTips('Save error!', 3);
+    return;
+  }
   var xmlURL = g_path.toString() + '/' + file.substring(0, file.lastIndexOf('.')) + '.xml';
   var fs = require('fs'), xml2js = require('xml2js');
-  var builder = new xml2js.Builder({rootName: 'annotation'});
-  var ratio = $('#img')[0].naturalWidth / $('#img')[0].width;
-  var obj = {
-    filename: file,
-    size: {
-      width: $('#img')[0].naturalWidth,
-      height: $('#img')[0].naturalHeight
-    },
-    object: []
-  };
-
-  $('#div-img .img-bndbox').each(function () {
-    var node = {
-      name: $(this).attr('data-sel'),
-      difficult: $(this).attr('data-dif'),
-      bndbox: {
-        xmin: Math.round($(this).position().left * ratio),
-        ymin: Math.round($(this).position().top * ratio),
-        xmax: Math.round(($(this).position().left + $(this).width()) * ratio),
-        ymax: Math.round(($(this).position().top + $(this).height()) * ratio)
-      }
-    };
-    obj.object.push(node);
-  });
-  var xml = builder.buildObject(obj);
+  var builder = new xml2js.Builder({rootName: 'annotation', headless: true});
+  var xml = builder.buildObject(g_xml).replace(/<id>bndbox-\d+<\/id>\s*/g, '');
+  ;
   fs.writeFile(xmlURL, xml, function (err) {
     if (err) throw err;
     //console.log(xmlURL + 'is saved!');
-    showTips('Saved!');
+    showTips('Saved!', 0);
   });
 }
 
 function readXML(file) {
   var xmlURL = g_path.toString() + '/' + file.substring(0, file.lastIndexOf('.')) + '.xml';
   var fs = require('fs'), xml2js = require('xml2js');
+  g_xml = null;
   var parseString = require('xml2js').parseString;
   fs.readFile(xmlURL, function (err, data) {
     if (err) throw err;
     parseString(data, function (err, result) {
       if (result.annotation.filename != file) return;
+      g_xml = result.annotation;
       var ratio = $('#img')[0].width / $('#img')[0].naturalWidth;
-      result.annotation.object.forEach(function (node) {
+      g_xml.object.forEach(function (node) {
         var div = document.createElement('div');
-        div.id = 'bndbox-' + (++bndbox_i);
+        node.id = div.id = 'bndbox-' + (++bndbox_i);
         div.className = 'img-bndbox';
         div.style.left = Math.round(node.bndbox[0].xmin * ratio) + 'px';
         div.style.top = Math.round(node.bndbox[0].ymin * ratio) + 'px';
@@ -349,7 +392,7 @@ function readXML(file) {
           + node.name + '</button><button type="button" bndbox="bndbox-' + bndbox_i +
           '" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete">X</button></div>');
       });
-      $('#label_objects').html(result.annotation.object.length);
+      $('#label_objects').html(g_xml.object.length);
     });
   });
 }
@@ -368,8 +411,8 @@ function saveMarkers() {
       fs.unlink(xmlPath, function (err) {
         //if (err) throw err;
         if (!err)
-          //console.log('successfully deleted ' + xmlPath);
-          showTips('Deleted!');
+        //console.log('successfully deleted ' + xmlPath);
+          showTips('Deleted!', 0);
       });
       if (g_item.hasClass('list-group-item-success'))
         g_item.removeClass('list-group-item-success');
@@ -396,6 +439,18 @@ function loadMarkers(e) {
   }
 }
 
-function showTips(t) {
-  $('<div class="alert alert-warning" role="alert">' + t + '</div>').prependTo('#tips').trigger('showalert');
+function showTips(text, level) {
+  var type;
+  if (level === +level && level <= ALERT_TYPE.length) {
+    type = ALERT_TYPE[level];
+  } else if ($.inArray(level, ALERT_TYPE)) {
+    type = level;
+  } else {
+    return;
+  }
+  if (type == ALERT_TYPE[3]){
+    $('<div class="alert alert-' + type + '" role="alert">' + text + '</div>').appendTo('#tips');
+  }else{
+    $('<div class="alert alert-' + type + '" role="alert">' + text + '</div>').appendTo('#tips').trigger('showalert');
+  }
 }

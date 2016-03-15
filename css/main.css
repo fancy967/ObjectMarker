@@ -64,7 +64,7 @@
 }
 
 .dlg-marker {
-    width: 300px;
+    width: 330px;
     position:absolute;
     display: none;
     padding: 5px;
@@ -80,7 +80,8 @@
     float: left;
 }
 
-.btn-delete {
+.btn-delete, .btn-hide {
+    margin-left: 5px;
     margin-top: 3px;
     float: right;
 }
