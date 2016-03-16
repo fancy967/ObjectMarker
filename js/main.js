@@ -4,35 +4,38 @@ var g_path = null,
   g_item = null,
   g_div = null,
   g_xml = null,
+  g_classes = null,
   bndbox_i = 0;
 const REMOTE = require('electron').remote,
   EXT = ['jpeg', 'jpg', 'png'],
-  ALERT_TYPE = ['success', 'info', 'warning', 'danger'];
+  ALERT_TYPE = ['success', 'info', 'warning', 'danger'],
+  CLASSES_NAME = 'classes.json';
 
 $(document).ready(function () {
 
-  var fs = require('fs');
-  var path_class = 'clasdses.txt';
-  fs.readFile(path_class, function (err, data) {
-    if (!data) {
-      path_class = process.resourcesPath + '/app/' + path_class;
-      try {
-        data = fs.readFileSync(path_class).toString();
-      } catch (e) {
-        if (e.code === 'ENOENT') {
-          showTips('Category file not found!', 3);
-          return;
-        } else {
-          throw e;
+  var path;
+  try{
+    path = './' + CLASSES_NAME;
+    g_classes = require(path);
+  }catch (e){
+    if (e.code == 'MODULE_NOT_FOUND'){
+      try{
+        path = process.resourcesPath + '/app/' +CLASSES_NAME;
+        g_classes = require(path);
+      }catch (e){
+        if (e.code == 'MODULE_NOT_FOUND'){
+          showTips('Cannot find ' + classes, 3);
+        }else{
+          showTips(e.code, 3);
         }
+        return;
       }
+    }else{
+      showTips(e.code, 3);
+      return;
     }
-    var classes = data.toString().split(/\r?\n/ig);
-    for (var i = 0; i < classes.length; i++) {
-      $('#sel-class').append('<option value="' + classes[i].replace(/\s+/g, '') + '">' + classes[i] + '</option>');
-    }
-  });
-
+  }
+  sortClasses(g_classes.classes);
 
   const win = REMOTE.getCurrentWindow();
   var tID;
@@ -51,9 +54,20 @@ $(document).ready(function () {
       var height = win.getSize()[1];
       $('#list-files').css('max-height', (height - h) * r + list_height + 'px');
       $('#div_objects').css('max-height', (height - h) * (1 - r) + obj_height + 'px');
-    })
-    ;
+    });
+    win.on('close', function () {
+      var fs= require('fs');
+      fs.writeFile(path, JSON.stringify(g_classes));
+    });
   }
+
+  $('#classes').on("click", 'a', function (e) {
+    if ($('#sel-class').val() == $(e.target).html() && $('#sel-class').attr('value') == $(e.target).attr('value'))
+      return;
+    $('#sel-class').val($(e.target).html());
+    $('#sel-class').attr('value', $(e.target).attr('value'));
+    $('#sel-class').trigger('change');
+  });
 
   $('#btn-open').click(function () {
     const dialog = REMOTE.require('dialog');
@@ -113,18 +127,43 @@ $(document).ready(function () {
       }
     }
     saveMarkers();
+    for (var i = 0, l = g_xml.object.length; i < l; i++) {
+      if (g_xml.object[i].id == g_div.id) {
+        g_xml.object[i].difficult = $(g_div).attr('data-dif');
+      }
+    }
   });
 
   $('#sel-class').change(function () {
-    $(g_div).attr('data-sel', $('#sel-class').val());
+    $(g_div).attr('data-class-name', $('#sel-class').val());
     var b_id = g_div.id;
     $('#div_objects button.btn-default[bndbox="' + b_id + '"]').html($('#sel-class').val());
+    var flag = false;
+    for (var i = 0, l = g_classes.classes.length; i < l; i++) {
+      if (g_classes.classes[i].name == $(g_div).attr('data-class-name')) {
+        g_classes.classes[i].count++;
+        $(g_div).attr('data-sel', g_classes.classes[i].value);
+        break;
+      }
+    }
+    if (!flag){
+      var node = {
+        name: $(g_div).attr('data-class-name'),
+        value: $(g_div).attr('data-class-name').replace(/\s+/g, ''),
+        count: 0,
+        fix: 0
+      };
+      g_classes.classes.push(node);
+      $(g_div).attr('data-sel', node.value);
+    }
     for (var i = 0, l = g_xml.object.length; i < l; i++) {
       if (g_xml.object[i].id == g_div.id) {
         g_xml.object[i].name = $(g_div).attr('data-sel');
+        break;
       }
     }
     saveMarkers();
+    sortClasses(g_classes.classes);
   });
 
   $('#confirm-delete').on('show.bs.modal', function (e) {
@@ -145,7 +184,8 @@ $(document).ready(function () {
       $('#div_objects button.btn-default[bndbox="' + g_div.id + '"]').parent().remove();
       for (var i = 0, l = g_xml.object.length; i < l; i++) {
         if (g_xml.object[i].id == g_div.id) {
-          g_xml.object = g_xml.object.slice(i, 1);
+          g_xml.object.splice(i, 1);
+          break;
         }
       }
       $(g_div).remove();
@@ -185,6 +225,7 @@ $(document).ready(function () {
   var cDiv = null;
 
   $('#img').mousedown(function (e) {
+    $('#dlg-marker').fadeOut('fast');
     if (cDiv) return;
     startX = e.offsetX;
     startY = e.offsetY;
@@ -211,11 +252,11 @@ $(document).ready(function () {
   });
 
   $(window).mouseup(function (e) {
-    if ($('#dlg-marker').is(":visible") && $(e.target).parents("#dlg-marker").length != 1
-      && $('#del_object').html() == 'Null') {
-      g_div = null;
-      $('#dlg-marker').fadeOut('fast');
-    }
+    //if ($('#dlg-marker').is(":visible") && $(e.target).parents("#dlg-marker").length != 1
+    //  && $('#del_object').html() == 'Null') {
+    //  g_div = null;
+    //  $('#dlg-marker').fadeOut('fast');
+    //}
     if (!cDiv) return;
     if ($(cDiv).width() <= 2 || $(cDiv).height() <= 2) {
       $(cDiv).remove();
@@ -224,14 +265,22 @@ $(document).ready(function () {
     }
     g_div = cDiv;
     cDiv = null;
+
+    $('#ckb-dif').get(0).checked = false;
+    $(g_div).attr('data-dif', 0);
+    $('#sel-class').val(g_classes.classes[0].name);
+    $('#sel-class').attr('value', g_classes.classes[0].value);
+    $(g_div).attr('data-sel', $('#sel-class').val());
+
     bndbox_i++;
     $('#div_objects').append('<div class="btn-group"><button type="button" bndbox="bndbox-' + bndbox_i +
-      '" class="btn btn-default btn-sm active"></button><button type="button" bndbox="bndbox-' + bndbox_i +
+      '" class="btn btn-default btn-sm active">' + $(g_div).attr('data-sel') +
+      '</button><button type="button" bndbox="bndbox-' + bndbox_i +
       '" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete">X</button></div>');
 
     if (g_xml == null) {
       g_xml = {
-        filename: file,
+        filename: g_item.html(),
         size: {
           width: $('#img')[0].naturalWidth,
           height: $('#img')[0].naturalHeight
@@ -239,13 +288,13 @@ $(document).ready(function () {
         object: []
       };
     }
+    if (g_xml.object == null) {
+      g_xml.object = [];
+    }
 
     var ratio = $('#img')[0].naturalWidth / $('#img')[0].width;
-    $('#ckb-dif').get(0).checked = false;
-    $(g_div).attr('data-dif', 0);
-    $('#sel-class').prop('selectedIndex', 0);
-    $(g_div).attr('data-sel', $('#sel-class').val());
     var node = {
+      id: 'bndbox-' + bndbox_i,
       name: $(g_div).attr('data-sel'),
       difficult: $(g_div).attr('data-dif'),
       bndbox: {
@@ -256,7 +305,7 @@ $(document).ready(function () {
       }
     };
     g_xml.object.push(node);
-
+    saveMarkers();
     var x = e.offsetX + e.target.offsetLeft;
     var y = e.offsetY + e.target.offsetTop;
     showTextDialog(x, y);
@@ -265,6 +314,29 @@ $(document).ready(function () {
   $(document).on("click", '.img-bndbox', function (e) {
     if (cDiv) return;
     g_div = this;
+
+    if (!$(g_div).attr('data-class-name')){
+      var flag = false;
+      for (var i = 0, l = g_classes.classes.length; i < l; i++) {
+        if (g_classes.classes[i].value == $(g_div).attr('data-sel')) {
+          $(g_div).attr('data-class-name', g_classes.classes[i].name);
+          flag = true;
+          break;
+        }
+      }
+      if (!flag){
+        var node = {
+          name: $(g_div).attr('data-sel'),
+          value: $(g_div).attr('data-sel'),
+          count: 0,
+          fix: 0
+        };
+        g_classes.classes.push(node);
+        $(g_div).attr('data-class-name', $(g_div).attr('data-sel'));
+        sortClasses(g_classes.classes, false);
+      }
+    }
+
     var x, y;
     if (isNaN(e.offsetX)) {
       x = $(g_div).width() * 0.5 + g_div.offsetLeft;
@@ -319,6 +391,7 @@ function loadFiles(dir) {
   $('#label_objects').html('0');
   $('#div_objects').html('');
   bndbox_i = 0;
+  g_xml = null;
 }
 
 function addNode(fileName, check) {
@@ -342,6 +415,7 @@ function showTextDialog(x, y) {
 
   $('#ckb-dif').get(0).checked = $(g_div).attr('data-dif') == '1' ? true : false;
   $('#sel-class').val($(g_div).attr('data-sel'));
+  $('#sel-class').attr('value', $(g_div).attr('data-class-name'));
   $('#dlg-marker').fadeIn('fast');
 }
 
@@ -366,6 +440,7 @@ function readXML(file) {
   var xmlURL = g_path.toString() + '/' + file.substring(0, file.lastIndexOf('.')) + '.xml';
   var fs = require('fs'), xml2js = require('xml2js');
   g_xml = null;
+  bndbox_i = 0;
   var parseString = require('xml2js').parseString;
   fs.readFile(xmlURL, function (err, data) {
     if (err) throw err;
@@ -373,26 +448,30 @@ function readXML(file) {
       if (result.annotation.filename != file) return;
       g_xml = result.annotation;
       var ratio = $('#img')[0].width / $('#img')[0].naturalWidth;
-      g_xml.object.forEach(function (node) {
-        var div = document.createElement('div');
-        node.id = div.id = 'bndbox-' + (++bndbox_i);
-        div.className = 'img-bndbox';
-        div.style.left = Math.round(node.bndbox[0].xmin * ratio) + 'px';
-        div.style.top = Math.round(node.bndbox[0].ymin * ratio) + 'px';
-        var w = Math.round((node.bndbox[0].xmax - node.bndbox[0].xmin) * ratio);
-        var h = Math.round((node.bndbox[0].ymax - node.bndbox[0].ymin) * ratio);
-        div.style.width = w + 'px';
-        div.style.height = h + 'px';
-        div.style.zIndex = Math.round((1 - w * h / ($('#img')[0].width * $('#img')[0].height)) * 100);
-        div.setAttribute('data-sel', node.name);
-        div.setAttribute('data-dif', node.difficult);
-        $('#div-img').append(div);
-        $('#div_objects').append('<div class="btn-group">' +
-          '<button type="button" bndbox="bndbox-' + bndbox_i + '" class="btn btn-default btn-sm active">'
-          + node.name + '</button><button type="button" bndbox="bndbox-' + bndbox_i +
-          '" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete">X</button></div>');
-      });
-      $('#label_objects').html(g_xml.object.length);
+      if (g_xml.object != null){
+        g_xml.object.forEach(function (node) {
+          var div = document.createElement('div');
+          node.id = div.id = 'bndbox-' + (++bndbox_i);
+          div.className = 'img-bndbox';
+          div.style.left = Math.round(node.bndbox[0].xmin * ratio) + 'px';
+          div.style.top = Math.round(node.bndbox[0].ymin * ratio) + 'px';
+          var w = Math.round((node.bndbox[0].xmax - node.bndbox[0].xmin) * ratio);
+          var h = Math.round((node.bndbox[0].ymax - node.bndbox[0].ymin) * ratio);
+          div.style.width = w + 'px';
+          div.style.height = h + 'px';
+          div.style.zIndex = Math.round((1 - w * h / ($('#img')[0].width * $('#img')[0].height)) * 100);
+          div.setAttribute('data-sel', node.name);
+          div.setAttribute('data-dif', node.difficult);
+          $('#div-img').append(div);
+          $('#div_objects').append('<div class="btn-group">' +
+            '<button type="button" bndbox="bndbox-' + bndbox_i + '" class="btn btn-default btn-sm active">'
+            + node.name + '</button><button type="button" bndbox="bndbox-' + bndbox_i +
+            '" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete">X</button></div>');
+        });
+        $('#label_objects').html(g_xml.object.length);
+      }else{
+        $('#label_objects').html('0');
+      }
     });
   });
 }
@@ -412,7 +491,9 @@ function saveMarkers() {
         //if (err) throw err;
         if (!err)
         //console.log('successfully deleted ' + xmlPath);
-          showTips('Deleted!', 0);
+        showTips('Deleted!', 0);
+        bndbox_i = 0;
+        g_xml = null;
       });
       if (g_item.hasClass('list-group-item-success'))
         g_item.removeClass('list-group-item-success');
@@ -452,5 +533,27 @@ function showTips(text, level) {
     $('<div class="alert alert-' + type + '" role="alert">' + text + '</div>').appendTo('#tips');
   }else{
     $('<div class="alert alert-' + type + '" role="alert">' + text + '</div>').appendTo('#tips').trigger('showalert');
+  }
+}
+
+function sortClasses(arr){
+  var mode = arguments[1] != undefined ? arguments[1] : true;
+  if (arr != null && arr.length > 1 && mode){
+    arr = arr.sort(function(a, b){
+      if (a.fix == b.fix){
+        if (a.count == b.count){
+          return a.name > b.name ? 1:-1
+        }else{
+          return b.count - a.count
+        }
+      }else{
+        return b.fix - a.fix
+      }
+    })
+  }
+  $('#classes').html('');
+  for (var i = 0; i < arr.length; i++) {
+    $('#classes').append('<li><a href="javascript:void(0)" index="' + i +  '" value="' + arr[i].value + '">'
+      + arr[i].name + '</a></li>');
   }
 }

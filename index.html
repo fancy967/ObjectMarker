@@ -38,22 +38,25 @@
     <div class="panel-body">
       <div class="div-img" id="div-img">
         <img src="" width="100%" id="img" ondragstart="return false;"/>
-        <div class="form-horizontal dlg-marker" id="dlg-marker">
-          <div class="form-inline btns-left">
-            <select class="btn sel-class" id="sel-class">
-              <option value="none">Classes</option>
-            </select>
+        <div class="form-inline dlg-marker" id="dlg-marker">
+            <div class="input-group classes-group">
+              <input type="text" class="form-control" id="sel-class">
+              <div class="input-group-btn">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span></button>
+                <ul class="dropdown-menu dropdown-menu-right" id="classes">
+                </ul>
+              </div>
+            </div>
             <div class="checkbox">
               <label>
                 <input type="checkbox" id="ckb-dif"> Difficult?
               </label>
             </div>
-          </div>
-          <button class="btn btn-danger btn-delete" data-toggle="modal" data-target="#confirm-delete">
-            <span class="glyphicon glyphicon-remove-sign"></span>
-          </button>
           <button class="btn btn-warning btn-hide" id="btn-hide">
             <span class="glyphicon glyphicon-ban-circle"></span>
+          </button>
+          <button class="btn btn-danger btn-delete" data-toggle="modal" data-target="#confirm-delete">
+            <span class="glyphicon glyphicon-remove-sign"></span>
           </button>
         </div>
       </div>

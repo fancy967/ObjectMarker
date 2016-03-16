@@ -64,7 +64,6 @@
 }
 
 .dlg-marker {
-    width: 330px;
     position:absolute;
     display: none;
     padding: 5px;
@@ -72,25 +71,21 @@
     border-radius:3px;
     z-index: 999;
 }
-.sel-class, .checkbox{
-    font-size: 18px;
-}
 
-.btns-left {
-    float: left;
+.checkbox{
+    font-size: 18px;
 }
 
 .btn-delete, .btn-hide {
     margin-left: 5px;
     margin-top: 3px;
-    float: right;
 }
 
 .del_object{
     color: red;
 }
 
-.form-horizontal .checkbox{
+.checkbox{
     padding-top: 0;
     min-height: 0;
 }
@@ -105,17 +100,12 @@
     padding-right: 5px;
 }
 
-select.btn-mini {
+.classes-group{
+    width: 160px;
+}
+
+#classes{
     height: auto;
-    line-height: 10px;
-}
-
-/* this is optional (see below) */
-select.btn {
-    -webkit-appearance: button;
-}
-
-select.btn-mini + .caret {
-    margin-left: -20px;
-    margin-top: 9px;
+    max-height: 300px;
+    overflow-x: hidden;
 }
