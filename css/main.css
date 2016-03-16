@@ -1,69 +1,72 @@
-.tips{
+.modal {
+    text-align: center;
+}
+
+@media screen and (min-width: 768px) {
+    .modal:before {
+        display: inline-block;
+        vertical-align: middle;
+        content: " ";
+        height: 100%;
+    }
+}
+
+.modal-dialog {
+    display: inline-block;
+    text-align: left;
+    vertical-align: middle;
+}
+/* Vertically center the modal */
+
+.modal-dialog {
+    width: 500px;
+}
+
+.modal-header, .modal-footer{
+    padding: 10px;
+    text-align: center;
+}
+
+.modal-body p{
+    margin-bottom: 0;
+    font-size: 18px;
+    text-align: center;
+}
+/* Modify modal's style */
+
+.label-mark{
+    color: red;
+}
+
+.div-alert{
     z-index: 1000;
     position: fixed;
     top: 15px;
     right: 15px;
 }
 
-.tips .alert{
+.div-alert .alert{
     padding: 10px;
     margin-bottom: 10px;
 }
+/* Alert box */
 
-
-.left-col {
+.col-left {
     margin-top: 15px;
     padding-right: 0;
 }
 
-.right-col {
-    margin-top: 15px;
-    position: fixed;
-    top: 0;
-    right: 0
-}
-
-.btns-ctrl {
-    margin-bottom: 15px;
-}
-
-.list-files {
-    position: relative;
-    max-height: 310px;
-    overflow: auto;
-    overflow-x:hidden;
-    margin-bottom: 0;
-}
-
-.div_objects {
-    position: relative;
-    max-height: 100px;
-    overflow: auto;
-    overflow-x:hidden;
-    margin-bottom: 0;
-}
-
-.list-group-item{
-   padding: 5px 10px;
-}
-
-.div-img {
+.div-container {
     position: relative;
 }
 
-.img-bndbox{
-    position:absolute;
-    background:#EFEFEF;
-    opacity: 0.6;
-}
-
-#img{
+.div-container img{
     position: relative;
     top: 0;
     left: 0;
 }
 
-.dlg-marker {
+.div-container .div-toolkit {
     position:absolute;
     display: none;
     padding: 5px;
@@ -72,40 +75,71 @@
     z-index: 999;
 }
 
-.checkbox{
-    font-size: 18px;
-}
-
-.btn-delete, .btn-hide {
-    margin-left: 5px;
-    margin-top: 3px;
-}
-
-.del_object{
-    color: red;
-}
-
-.checkbox{
-    padding-top: 0;
-    min-height: 0;
-}
-
-.btn-group{
-    margin-right: 5px;
-    margin-bottom: 5px;
-}
-
-.btn-group > .btn-danger {
-    padding-left: 5px;
-    padding-right: 5px;
-}
-
-.classes-group{
+.div-container .div-toolkit .input-group {
     width: 160px;
 }
 
-#classes{
+.div-container .div-toolkit .input-group input,
+.div-container .div-toolkit .input-group li
+{
+    font-size: 18px;
+}
+
+.ul-classes-list{
     height: auto;
     max-height: 300px;
     overflow-x: hidden;
 }
+
+.div-container .div-toolkit .checkbox{
+    font-size: 18px;
+}
+
+.div-container .img-bndbox{
+    position:absolute;
+    background:#EFEFEF;
+    opacity: 0.6;
+}
+/* Left panel */
+
+.col-right {
+    margin-top: 15px;
+    position: fixed;
+    top: 0;
+    right: 0
+}
+
+.div-btns {
+    margin-bottom: 15px;
+}
+
+.div-files-list {
+    position: relative;
+    max-height: 310px;
+    overflow: auto;
+    overflow-x:hidden;
+    margin-bottom: 0;
+}
+
+.div-files-list .list-group-item{
+    padding: 5px 10px;
+}
+
+.div-marks-list {
+    position: relative;
+    max-height: 100px;
+    overflow: auto;
+    overflow-x:hidden;
+    margin-bottom: 0;
+}
+
+.div-marks-list .btn-group{
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.div-marks-list .btn-group > .btn-danger {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+/* Right panel */
