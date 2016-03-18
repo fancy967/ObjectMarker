@@ -16,48 +16,53 @@
     text-align: left;
     vertical-align: middle;
 }
+
 /* Vertically center the modal */
 
 .modal-dialog {
     width: 500px;
 }
 
-.modal-header, .modal-footer{
+.modal-header, .modal-footer {
     padding: 10px;
     text-align: center;
 }
 
-.modal-body p{
+.modal-body p {
     margin-bottom: 0;
     font-size: 18px;
     text-align: center;
 }
+
 /* Modify modal's style */
 
-.label-mark{
+.label-mark {
     color: red;
 }
 
-.div-alert{
+.div-alert {
     z-index: 1000;
     position: fixed;
     top: 15px;
     right: 15px;
 }
 
-.div-alert .alert{
+.div-alert .alert {
     padding: 10px;
     margin-bottom: 10px;
 }
+
 /* Alert box */
 
 .div-toolkit {
-    position:absolute;
+    position: absolute;
     display: none;
     padding: 5px;
-    background:#EFEFEF;
-    border-radius:3px;
+    background: #EFEFEF;
+    border-radius: 6px;
     z-index: 999;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .5);
+    border: #bbb 1px solid;
 }
 
 .div-toolkit .input-group {
@@ -66,16 +71,16 @@
 
 .div-toolkit .input-group input,
 .div-toolkit .input-group li,
-.div-toolkit .checkbox
-{
+.div-toolkit .checkbox {
     font-size: 18px;
 }
 
-.ul-classes-list{
+.ul-classes-list {
     height: auto;
     max-height: 300px;
     overflow-x: hidden;
 }
+
 /* Marker toolkit */
 
 .col-left {
@@ -87,17 +92,18 @@
     position: relative;
 }
 
-.div-container img{
+.div-container img {
     position: relative;
     top: 0;
     left: 0;
 }
 
-.div-container .img-bndbox{
-    position:absolute;
-    background:#EFEFEF;
+.div-container .img-bndbox {
+    position: absolute;
+    background: #EFEFEF;
     opacity: 0.6;
 }
+
 /* Left panel */
 
 .col-right {
@@ -115,11 +121,11 @@
     position: relative;
     max-height: 310px;
     overflow: auto;
-    overflow-x:hidden;
+    overflow-x: hidden;
     margin-bottom: 0;
 }
 
-.div-files-list .list-group-item{
+.div-files-list .list-group-item {
     padding: 5px 10px;
 }
 
@@ -127,11 +133,11 @@
     position: relative;
     max-height: 100px;
     overflow: auto;
-    overflow-x:hidden;
+    overflow-x: hidden;
     margin-bottom: 0;
 }
 
-.div-marks-list .btn-group{
+.div-marks-list .btn-group {
     margin-right: 5px;
     margin-bottom: 5px;
 }
@@ -140,4 +146,5 @@
     padding-left: 5px;
     padding-right: 5px;
 }
+
 /* Right panel */
