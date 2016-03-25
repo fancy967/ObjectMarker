@@ -65,6 +65,16 @@ $(document).ready(function () {
    * Binding events.
    * 2. Button click event
    */
+  $('#btn_zoom_out').click(function () {
+    if (!g_curListItem) return;
+    console.log($('#img')[0].width);
+  });
+
+  $('#btn_zoom_in').click(function () {
+    if (!g_curListItem) return;
+
+  });
+  
   $('#btn_open').click(function () {
     var remote = require('electron').remote;
     var dialog = remote.require('dialog');
@@ -343,19 +353,12 @@ $(document).ready(function () {
     }
   });
 
-  var inScroll = false;
-  $(window).mousedown(function (e) {
-    if (window.pageXOffset + e.clientX > $(window).width())
-      inScroll = true;
-  });
-
   $(window).mouseup(function (e) {
     if ($('#div_toolkit').is(":visible") && $(e.target).parents("#div_toolkit").length != 1
-      && $('#label_mark').html() == 'Null' && !$('#input_class').is(':focus') && !inScroll) {
+      && $('#label_mark').html() == 'Null' && !$('#input_class').is(':focus')) {
       g_curDIV = null;
       $('#div_toolkit').fadeOut('fast');
     }
-    inScroll = false;
     if (!cDiv) return;
     if ($(cDiv).width() <= 2 || $(cDiv).height() <= 2) {
       $(cDiv).remove();
@@ -445,6 +448,7 @@ function loadFiles(dir) {
   $('#div_container .img-bndbox').remove();
   $('#div_toolkit').hide();
   g_curDIV = null;
+  g_curListItem = null;
   $('#img')[0].src = '';
   $('#label_image_name').html('Null');
   $('#label_marks_num').html('0');

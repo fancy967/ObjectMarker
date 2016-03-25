@@ -1,3 +1,25 @@
+.container-fluid {
+    padding-top: 15px;
+}
+
+.row {
+    margin: 0;
+}
+
+.col-left, .col-right {
+    padding: 0;
+}
+
+.col-right {
+    padding-left: 15px;
+}
+
+.panel {
+    margin-bottom: 15px;
+}
+
+/* Adjust layout */
+
 .modal {
     text-align: center;
 }
@@ -82,14 +104,15 @@
 }
 
 /* Marker toolkit */
-
-.col-left {
-    margin-top: 15px;
-    padding-right: 0;
+.btns-zoom{
+    margin: -5px 0;
 }
 
 .div-container {
     position: relative;
+    margin: -15px;
+    height: calc(100vh - 73px);
+    overflow-y: auto;
 }
 
 .div-container img {
@@ -105,13 +128,6 @@
 }
 
 /* Left panel */
-
-.col-right {
-    margin-top: 15px;
-    position: fixed;
-    top: 0;
-    right: 0
-}
 
 .div-btns {
     margin-bottom: 15px;
