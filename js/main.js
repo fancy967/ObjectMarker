@@ -6,6 +6,7 @@ var g_curDIV = null;
 var g_marksXML = null;
 var g_classesArr = null;
 var g_bndBoxCnt = 0;
+var g_zoom = 100;
 
 const IMG_EXTENSIONS = ['jpeg', 'jpg', 'png'];
 const ALERT_TYPES = ['success', 'info', 'warning', 'danger'];
@@ -65,14 +66,24 @@ $(document).ready(function () {
    * Binding events.
    * 2. Button click event
    */
-  $('#btn_zoom_out').click(function () {
+  $('#btn_zoom_reset').click(function () {
     if (!g_curListItem) return;
-    console.log($('#img')[0].width);
+    g_zoom = 100;
+    $('#img').css('width', g_zoom + '%');
+  });
+
+  $('#btn_zoom_out').click(function () {
+    if (!g_curListItem || g_zoom <= 10) return;
+    g_zoom -= 10;
+    $('#img').css('width', g_zoom + '%');
+    generateBoundingBox(false);
   });
 
   $('#btn_zoom_in').click(function () {
     if (!g_curListItem) return;
-
+    g_zoom += 10;
+    $('#img').css('width', g_zoom + '%');
+    generateBoundingBox(false);
   });
   
   $('#btn_open').click(function () {
@@ -454,6 +465,7 @@ function loadFiles(dir) {
   $('#label_marks_num').html('0');
   $('#div_marks_list').html('');
   g_bndBoxCnt = 0;
+  g_zoom = 100;
   g_marksXML = null;
 }
 
@@ -509,40 +521,48 @@ function readFromXML(file) {
   var xmlURL = g_imgFolderPath.toString() + '/' + file.substring(0, file.lastIndexOf('.')) + '.xml';
   var fs = require('fs'), xml2js = require('xml2js');
   g_marksXML = null;
-  g_bndBoxCnt = 0;
   var parseString = require('xml2js').parseString;
   fs.readFile(xmlURL, function (err, data) {
     if (err) throw err;
     parseString(data, function (err, result) {
       if (result.annotation.filename != file) return;
       g_marksXML = result.annotation;
-      var ratio = $('#img')[0].width / $('#img')[0].naturalWidth;
-      if (g_marksXML.object != null) {
-        g_marksXML.object.forEach(function (node) {
-          var div = document.createElement('div');
-          node.id = div.id = 'bndbox-' + (++g_bndBoxCnt);
-          div.className = 'img-bndbox';
-          div.style.left = Math.round(node.bndbox[0].xmin * ratio) + 'px';
-          div.style.top = Math.round(node.bndbox[0].ymin * ratio) + 'px';
-          var w = Math.round((node.bndbox[0].xmax - node.bndbox[0].xmin) * ratio);
-          var h = Math.round((node.bndbox[0].ymax - node.bndbox[0].ymin) * ratio);
-          div.style.width = w + 'px';
-          div.style.height = h + 'px';
-          div.style.zIndex = Math.round((1 - w * h / ($('#img')[0].width * $('#img')[0].height)) * 100);
-          div.setAttribute('data-sel', node.name);
-          div.setAttribute('data-dif', node.difficult);
-          $('#div_container').append(div);
-          $('#div_marks_list').append('<div class="btn-group">' +
-            '<button type="button" bndbox="bndbox-' + g_bndBoxCnt + '" class="btn btn-default btn-sm active">'
-            + node.name + '</button><button type="button" bndbox="bndbox-' + g_bndBoxCnt +
-            '" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#modal_del_confirm">X</button></div>');
-        });
-        $('#label_marks_num').html(g_marksXML.object.length);
-      } else {
-        $('#label_marks_num').html('0');
-      }
+      generateBoundingBox(true);
     });
   });
+}
+
+function generateBoundingBox(alsoGenerateMarksList) {
+  g_bndBoxCnt = 0;
+  $('#div_container .img-bndbox').remove();
+  if (alsoGenerateMarksList) $('#div_marks_list').html('');
+  var ratio = $('#img')[0].width / $('#img')[0].naturalWidth;
+  if (g_marksXML.object != null) {
+    g_marksXML.object.forEach(function (node) {
+      var div = document.createElement('div');
+      node.id = div.id = 'bndbox-' + (++g_bndBoxCnt);
+      div.className = 'img-bndbox';
+      div.style.left = Math.round(node.bndbox[0].xmin * ratio) + 'px';
+      div.style.top = Math.round(node.bndbox[0].ymin * ratio) + 'px';
+      var w = Math.round((node.bndbox[0].xmax - node.bndbox[0].xmin) * ratio);
+      var h = Math.round((node.bndbox[0].ymax - node.bndbox[0].ymin) * ratio);
+      div.style.width = w + 'px';
+      div.style.height = h + 'px';
+      div.style.zIndex = Math.round((1 - w * h / ($('#img')[0].width * $('#img')[0].height)) * 100);
+      div.setAttribute('data-sel', node.name);
+      div.setAttribute('data-dif', node.difficult);
+      $('#div_container').append(div);
+      if (alsoGenerateMarksList){
+        $('#div_marks_list').append('<div class="btn-group">' +
+          '<button type="button" bndbox="bndbox-' + g_bndBoxCnt + '" class="btn btn-default btn-sm active">'
+          + node.name + '</button><button type="button" bndbox="bndbox-' + g_bndBoxCnt +
+          '" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#modal_del_confirm">X</button></div>');
+      }
+    });
+    if (alsoGenerateMarksList) $('#label_marks_num').html(g_marksXML.object.length);
+  }else{
+    if (alsoGenerateMarksList) $('#label_marks_num').html('0');
+  }
 }
 
 function updateMarks() {
@@ -577,6 +597,8 @@ function loadMarkers(e) {
   $('#div_toolkit').hide();
   g_curDIV = null;
   $('#img')[0].src = g_imgFolderPath + '/' + e.html();
+  g_zoom = 100;
+  $('#img').css('width', g_zoom + '%');
   $('#label_image_name').html(e.html());
   $('#div_marks_list').html('');
   if (e.hasClass('list-group-item-success')) {
