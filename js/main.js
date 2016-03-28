@@ -48,7 +48,7 @@ $(document).ready(function () {
       if (g_curListItem) {
         clearTimeout(tID);
         tID = setTimeout(function () {
-          loadMarkers(g_curListItem);
+          generateBoundingBox(false);
         }, 150);
       }
       var height = win.getSize()[1];
@@ -70,6 +70,7 @@ $(document).ready(function () {
     if (!g_curListItem) return;
     g_zoom = 100;
     $('#img').css('width', g_zoom + '%');
+    generateBoundingBox(false);
   });
 
   $('#btn_zoom_out').click(function () {
@@ -85,7 +86,7 @@ $(document).ready(function () {
     $('#img').css('width', g_zoom + '%');
     generateBoundingBox(false);
   });
-  
+
   $('#btn_open').click(function () {
     var remote = require('electron').remote;
     var dialog = remote.require('dialog');
@@ -308,14 +309,14 @@ $(document).ready(function () {
     }
 
     var x, y;
-    if (isNaN(e.clientX)) {
-      x = $(g_curDIV).width() * 0.5 + $(g_curDIV).offset().left;
-      y = $(g_curDIV).height() * 0.5 + $(g_curDIV).offset().top;
+    if (isNaN(e.offsetX)) {
+      x = $(g_curDIV).width() * 0.5 + $(g_curDIV).position().left;
+      y = $(g_curDIV).height() * 0.5 + $(g_curDIV).position().top;
     } else {
-      x = window.pageXOffset + e.clientX;
-      y = window.pageYOffset + e.clientY;
+      x = e.offsetX + e.target.offsetLeft;
+      y = e.offsetY + e.target.offsetTop;
     }
-    showToolkit(x, y);
+    showToolkit(x, y, false);
   });
 
 
@@ -335,11 +336,12 @@ $(document).ready(function () {
   /**
    * Drag to draw mark for object
    */
-  var startX, startY;
+  var startX, startY, endX, endY, clientX, clientY;
+  var intervalID;
   var cDiv = null;
   $('#img').mousedown(function (e) {
     $('#div_toolkit').fadeOut('fast');
-    if (cDiv) return;
+    if (cDiv || !g_curListItem) return;
     startX = e.offsetX;
     startY = e.offsetY;
     cDiv = document.createElement('div');
@@ -347,20 +349,45 @@ $(document).ready(function () {
     cDiv.id = 'bndbox-' + (g_bndBoxCnt + 1);
     cDiv.style.left = startX + 'px';
     cDiv.style.top = startY + 'px';
+    cDiv.style.zIndex = 100;
     $('#div_container').append(cDiv);
   });
 
-  $('#div_container').mousemove(function (e) {
-    if (cDiv) {
+  $(window).mousemove(function (e) {
+    if (cDiv && (e.target.id == 'img' || e.target.className == 'img-bndbox')) {
       $('#div_toolkit').hide();
-      var endX = e.offsetX + e.target.offsetLeft;
-      var endY = e.offsetY + e.target.offsetTop;
+      clearInterval(intervalID);
+      endX = e.offsetX + e.target.offsetLeft;
+      endY = e.offsetY + e.target.offsetTop;
+      clientX = e.clientX;
+      clientY = e.clientY;
       var rectHeight = Math.abs(endY - startY) + 'px';
       var rectWidth = Math.abs(endX - startX) + 'px';
       $(cDiv).css('left', endX < startX ? endX : startX);
       $(cDiv).css('top', endY < startY ? endY : startY);
       $(cDiv).width(rectWidth);
       $(cDiv).height(rectHeight);
+    }else if(cDiv){
+      $('#div_toolkit').hide();
+      clearInterval(intervalID);
+      clientX = e.clientX;
+      clientY = e.clientY;
+      intervalID = setInterval(function(){
+        if(e.clientX > clientX && endX < $('#img')[0].width) {
+          endX++;
+          clientX++;
+        }
+        else if(e.clientX < clientX && endX >= 1){
+          endX--;
+          clientX--;
+        }
+        var rectHeight = Math.abs(endY - startY) + 'px';
+        var rectWidth = Math.abs(endX - startX) + 'px';
+        $(cDiv).css('left', endX < startX ? endX : startX);
+        $(cDiv).css('top', endY < startY ? endY : startY);
+        $(cDiv).width(rectWidth);
+        $(cDiv).height(rectHeight);
+      }, 500);
     }
   });
 
@@ -408,21 +435,20 @@ $(document).ready(function () {
     var ratio = $('#img')[0].naturalWidth / $('#img')[0].width;
     var node = {
       id: 'bndbox-' + g_bndBoxCnt,
-      name: $(g_curDIV).attr('data-sel'),
-      difficult: $(g_curDIV).attr('data-dif'),
-      bndbox: {
+      name: [$(g_curDIV).attr('data-sel')],
+      difficult: [$(g_curDIV).attr('data-dif')],
+      bndbox: [{
         xmin: Math.round($(g_curDIV).position().left * ratio),
         ymin: Math.round($(g_curDIV).position().top * ratio),
         xmax: Math.round(($(g_curDIV).position().left + $(g_curDIV).width()) * ratio),
         ymax: Math.round(($(g_curDIV).position().top + $(g_curDIV).height()) * ratio)
-      }
+      }]
     };
     g_marksXML.object.push(node);
     updateMarks();
-    var x = window.pageXOffset + e.clientX;
-    var y = window.pageYOffset + e.clientY;
-    showToolkit(x, y);
-    $('#div_toolkit .dropdown-toggle').dropdown('toggle');
+    var x = e.offsetX + e.target.offsetLeft > $('#img')[0].width ? $('#img')[0].width : e.offsetX;
+    var y = e.offsetY + e.target.offsetTop > $('#img')[0].height ? $('#img')[0].height : e.offsetY;
+    showToolkit(x, y, true);
   });
 
 });
@@ -461,6 +487,8 @@ function loadFiles(dir) {
   g_curDIV = null;
   g_curListItem = null;
   $('#img')[0].src = '';
+  g_zoom = 100;
+  $('#img').css('width', g_zoom + '%');
   $('#label_image_name').html('Null');
   $('#label_marks_num').html('0');
   $('#div_marks_list').html('');
@@ -481,20 +509,39 @@ function addFilesListNode(fileName, check) {
   }
 }
 
-function showToolkit(x, y) {
+function showToolkit(x, y, showDropdown) {
   $('#div_toolkit').hide();
-  $('#div_toolkit').css('left', x);
-  $('#div_toolkit').css('top', y + $('#div_toolkit').outerHeight() > $(document).height() ?
-  y - $('#div_toolkit').outerHeight() : y);
 
-  $('#div_toolkit').fadeIn('fast');
-
-  if ($(window).scrollTop() > y || $(window).scrollTop() + $(window).height() < y + $('#div_toolkit').outerHeight()) {
-    $('body').animate({
-      scrollTop: y + $('#div_toolkit').height() / 2
-      - $(window).height() / 2
-    }, 'fast');
+  var scrollX = $('#div_container').scrollLeft(), scrollY = $('#div_container').scrollTop();
+  var smooth = true;
+  if ($('#div_container').scrollLeft() > x || $('#div_container').scrollLeft() + $('#div_container').width() < x ||
+    $('#div_container').scrollTop() > y || $('#div_container').scrollTop() + $('#div_container').height() < y) {
+    scrollX = x - $('#div_container').width() / 2;
+    scrollY = y - $('#div_container').height() / 2;
+    smooth = false;
   }
+
+  $('#div_container').animate({
+    scrollTop: scrollY,
+    scrollLeft: scrollX
+  }, 'fast', function(){
+    var innerX = x - $('#div_container').scrollLeft() + $('#div_container').offset().left;
+    var innerY = y - $('#div_container').scrollTop() + $('#div_container').offset().top;
+    $('#div_toolkit').css('left', innerX);
+    $('#div_toolkit').css('top', innerY + $('#div_toolkit').outerHeight() > $(document).height() ?
+    innerY - $('#div_toolkit').outerHeight() : innerY);
+
+    if(smooth){
+      $('#div_toolkit').fadeIn('fast', function () {
+        if(showDropdown) $('#div_toolkit .dropdown-toggle').dropdown('toggle');
+      });
+    }
+    else {
+      $('#div_toolkit').show();
+      if(showDropdown) $('#div_toolkit .dropdown-toggle').dropdown('toggle');
+    }
+  });
+
   $('#div_toolkit .input-group').removeClass('dropup');
   $('#ckb_hard').get(0).checked = $(g_curDIV).attr('data-dif') == '1' ? true : false;
   $('#input_class').val($(g_curDIV).attr('data-sel'));
@@ -552,7 +599,7 @@ function generateBoundingBox(alsoGenerateMarksList) {
       div.setAttribute('data-sel', node.name);
       div.setAttribute('data-dif', node.difficult);
       $('#div_container').append(div);
-      if (alsoGenerateMarksList){
+      if (alsoGenerateMarksList) {
         $('#div_marks_list').append('<div class="btn-group">' +
           '<button type="button" bndbox="bndbox-' + g_bndBoxCnt + '" class="btn btn-default btn-sm active">'
           + node.name + '</button><button type="button" bndbox="bndbox-' + g_bndBoxCnt +
@@ -560,7 +607,7 @@ function generateBoundingBox(alsoGenerateMarksList) {
       }
     });
     if (alsoGenerateMarksList) $('#label_marks_num').html(g_marksXML.object.length);
-  }else{
+  } else {
     if (alsoGenerateMarksList) $('#label_marks_num').html('0');
   }
 }
