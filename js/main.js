@@ -273,7 +273,7 @@ $(document).ready(function () {
   $('#div_container').on("scroll", function () {
     var ignore = ignoreScrollEvents;
     ignoreScrollEvents = false;
-    if (ignore || $('#div_toolkit').is(":visible")) return false;
+    if (ignore || !$('#div_toolkit').is(":visible")) return false;
     $('#div_toolkit').fadeOut('fast');
   });
 
