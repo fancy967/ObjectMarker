@@ -1,3 +1,7 @@
+body{
+    overflow: hidden;
+}
+
 .container-fluid {
     padding-top: 15px;
 }
