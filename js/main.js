@@ -71,13 +71,19 @@ $(document).ready(function () {
         $('#btn_zoom_out').click();
         break;
       case 38:
-        $('#btn_leftward').click();
+        if (event.ctrlKey)
+          $('#btn_backward').click();
+        else
+          $('#btn_leftward').click();
         break;
       case 39:
         $('#btn_zoom_in').click();
         break;
       case 40:
-        $('#btn_rightward').click();
+        if (event.ctrlKey)
+          $('#btn_forward').click();
+        else
+          $('#btn_rightward').click();
         break;
       case 46:
         if(g_curDIV)
