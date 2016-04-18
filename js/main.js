@@ -49,6 +49,7 @@ $(document).ready(function () {
     var obj_height = parseInt($('#div_marks_list').css('max-height'));
     var r = Math.round(list_height / (list_height + obj_height));
     win.on('resize', function () {
+      $('#div_toolkit').hide();
       if (g_curListItem) {
         clearTimeout(tID);
         tID = setTimeout(function () {
@@ -247,7 +248,8 @@ $(document).ready(function () {
       $('#div_toolkit').hide();
       updateMarks();
     }
-    $('#modal_del_confirm').modal('hide');
+    if ($('#modal_del_confirm').hasClass('in'))
+      $('#modal_del_confirm').modal('hide');
   });
 
   $('#btn_hide').click(function () {
@@ -420,13 +422,13 @@ $(document).ready(function () {
    * Binding events.
    * 6. Bindingbox click event.
    */
-  var _time = null;
-  $(document).on("click", '.img-bndbox', function (e) {
-    clearTimeout(_time);
-    _time = setTimeout(function () {
+  var _timer = null;
+  $('#div_container').on("click", '.img-bndbox', function (e) {
+    _timer && clearTimeout(_timer);
+    var that = this;
+    _timer = setTimeout(function () {
       if (cDiv) return;
-      g_curDIV = this;
-
+      g_curDIV = that;
       if (!$(g_curDIV).attr('data-class-name')) {
         var flag = false;
         for (var i = 0, l = g_classesArr.length; i < l; i++) {
@@ -448,7 +450,6 @@ $(document).ready(function () {
           generateClassesList(g_classesArr);
         }
       }
-
       var x, y;
       if (isNaN(e.offsetX)) {
         x = $(g_curDIV).outerWidth() * 0.5 + $(g_curDIV).position().left;
@@ -458,15 +459,18 @@ $(document).ready(function () {
         y = e.offsetY + e.target.offsetTop + parseInt($(e.target).css('borderTopWidth'), 10);
       }
       showToolkit(x, y, true);
-
-    }, 150);
-  });
-
-  $(document).on("dblclick", '.img-bndbox', function (e) {
-    clearTimeout(_time);
+    }, 300);
+  }).on("dblclick", '.img-bndbox', function () {
+    _timer && clearTimeout(_timer);
     if (cDiv) return;
     g_curDIV = this;
     $('#btn_del_confirm').click();
+    /**
+     * Bug here, temporary solution!!
+     */
+    $('#div_toolkit').show();
+    $('#input_class').focus();
+    $('#div_toolkit').hide();
   });
 
 
@@ -495,7 +499,6 @@ $(document).ready(function () {
     if (cDiv || !g_curListItem) return;
     startX = e.offsetX;
     startY = e.offsetY;
-    console.log(startX + ':' + startY);
     cDiv = document.createElement('div');
     cDiv.className = 'img-bndbox';
     cDiv.id = 'bndbox-' + (g_bndBoxCnt + 1);
@@ -510,7 +513,6 @@ $(document).ready(function () {
       $('#div_toolkit').hide();
       endX = e.offsetX + e.target.offsetLeft + parseInt($(e.target).css('borderLeftWidth'), 10);
       endY = e.offsetY + e.target.offsetTop + parseInt($(e.target).css('borderTopWidth'), 10);
-      console.log(endX + '|' + endY + '|' + e.target.id);
       var rectHeight = Math.abs(endY - startY) + 'px';
       var rectWidth = Math.abs(endX - startX) + 'px';
       $(cDiv).css('left', endX < startX ? endX : startX);
@@ -760,7 +762,7 @@ function generateBoundingBox(alsoGenerateMarksList) {
   $('#div_container .img-bndbox').remove();
   if (alsoGenerateMarksList) $('#div_marks_list').html('');
   var ratio = $('#img')[0].width / $('#img')[0].naturalWidth;
-  if (g_marksXML.object != null) {
+  if (g_marksXML != null && g_marksXML.object != null) {
     g_marksXML.object.forEach(function (node) {
       var div = document.createElement('div');
       node.id = div.id = 'bndbox-' + (++g_bndBoxCnt);
@@ -836,6 +838,7 @@ function loadMarkers(e) {
     if (e.hasClass('list-group-item-success')) {
       readFromXML(e.html());
     } else {
+      g_marksXML = null;
       $('#label_marks_num').html(0);
     }
     $('#label_image_name').html(e.html());
