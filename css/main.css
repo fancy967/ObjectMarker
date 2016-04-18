@@ -108,7 +108,7 @@ body{
 }
 
 /* Marker toolkit */
-.btns-zoom{
+.btns-zoom, .btns-del-all{
     margin: -5px 0;
 }
 
@@ -128,7 +128,7 @@ body{
 .div-container .img-bndbox {
     position: absolute;
     background: #EFEFEF;
-    border:2px solid #33f928;
+    border:3px solid #33f928;
     opacity: 0.6;
 }
 
