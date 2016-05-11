@@ -56,7 +56,7 @@
         <div class="panel-heading">
           <span class="glyphicon glyphicon-picture"></span> Image Preview
           (<span id="label_image_name">Null</span>)
-          <div class="btn-group btn-group-sm pull-right btns-zoom" role="group" >
+          <div class="btn-group btn-group-sm pull-right btns-zoom" role="group">
             <button class="btn btn-default" id="btn_zoom_reset">
               <span class="glyphicon glyphicon-repeat"></span>
             </button>
@@ -81,6 +81,11 @@
         <div class="panel-heading">
           <span class="glyphicon glyphicon-cog"></span> Resources
           (<span id="label_images_num">0</span>)
+          <div class="btn-group pull-right">
+            <input type="text" class="form-control input-sm file-filter" id="file_filter"
+                   placeholder="Filter">
+            <span id="filter_clear" class="filter-clear glyphicon glyphicon-remove-circle"></span>
+          </div>
         </div>
         <div class="panel-body">
           <div class="form-inline div-btns">
@@ -108,7 +113,7 @@
         <div class="panel-heading">
           <span class="glyphicon glyphicon-cog"></span> Markered Objects
           (<span id="label_marks_num">0</span>)
-          <div class="btn-group btn-group-sm pull-right btns-del-all" role="group" >
+          <div class="btn-group btn-group-sm pull-right btns-del-all" role="group">
             <button class="btn btn-danger" id="btn_del_all">
               <span class="glyphicon glyphicon-remove"></span>
             </button>

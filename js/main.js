@@ -8,6 +8,7 @@ var g_classesArr = null;
 var g_bndBoxCnt = 0;
 var g_zoom = 100;
 var g_zoomInWidth = true;
+var g_fileList = null;
 var ignoreScrollEvents = false;
 
 const NEEDCONFIRM = false;
@@ -170,8 +171,7 @@ $(document).ready(function () {
     if (g_imgFolderPath == null) return;
     if ($('#modal_del_confirm').hasClass('in'))
       $('#modal_del_confirm').modal('hide');
-    var cursor = g_curListItem.html();
-    loadFiles(g_imgFolderPath, cursor);
+    loadFiles(g_imgFolderPath);
   });
 
   $('#btn_backward').click(function () {
@@ -370,6 +370,19 @@ $(document).ready(function () {
     updateMarks();
     g_classesArr = sortClasses(g_classesArr);
     generateClassesList(g_classesArr);
+  });
+
+  $('#file_filter').keyup(function () {
+    $(this).next().toggle(Boolean($(this).val()));
+    if(g_fileList)
+      generateFilesList(g_fileList, $(this).val());
+  });
+  $('#filter_clear').toggle(Boolean($(".searchinput").val()));
+  $('#filter_clear').click(function () {
+    $(this).prev().val('').focus();
+    $(this).hide();
+    if(g_fileList)
+      generateFilesList(g_fileList);
   });
 
   $('#div_container').on("scroll", function () {
@@ -621,29 +634,23 @@ $(document).ready(function () {
 /**
  * Utility functions
  */
-function loadFiles(dir, cursor) {
+function loadFiles(dir) {
   if (dir == null) return;
   g_imgFolderPath = dir;
   var fs = require('fs');
-  var c = 0;
   fs.readdir(dir.toString(), function (err, files) {
-    addFilesListNode(0);
-    var flag = false;
+    g_fileList = [];
     for (var i = 0, l = files.length; i < l; i++) {
       if ($.inArray(files[i].substring(files[i].lastIndexOf('.') + 1, files[i].length).toLowerCase(), IMG_EXTENSIONS) >= 0) {
         var xmlPath = dir.toString() + '/' + files[i].substring(0, files[i].lastIndexOf('.')) + '.xml';
-        flag = true;
-        c++;
         try {
           fs.accessSync(xmlPath, fs.F_OK);
-          addFilesListNode(files[i], true);
+          g_fileList.push({name: files[i], hasXML: true});
         } catch (e) {
-          addFilesListNode(files[i], false);
+          g_fileList.push({name: files[i], hasXML: false});
         }
       }
     }
-    if (!flag) addFilesListNode(-1);
-    $('#label_images_num').html(c);
     $('#div_container .img-bndbox').remove();
     $('#div_toolkit').hide();
     g_curDIV = null;
@@ -657,23 +664,30 @@ function loadFiles(dir, cursor) {
     $('#div_marks_list').html('');
     g_bndBoxCnt = 0;
     g_marksXML = null;
-    if (flag && !cursor)
-      $('#btn_backward').click();
-    else if (flag && cursor)
-      $('#div_files_list a:contains(' + cursor + ')').click();
+    generateFilesList(g_fileList, $('#file_filter').val());
   });
 }
 
-function addFilesListNode(fileName, check) {
-  if (fileName == 0) {
-    $('#div_files_list').html('');
-  } else if (fileName == -1) {
-    $('#div_files_list').html('<li class="list-group-item list-group-item-danger">No Image Found!</li>');
-  } else {
-    var node = '<a href="#" class="list-group-item list-group-item-' +
-      (check ? 'success">' : 'warning">') + fileName + '</a>';
-    $('#div_files_list').append(node);
+function generateFilesList(fileList, filter) {
+  $('#div_files_list').html('');
+  var c = 0;
+  if(fileList){
+    fileList.forEach(function (file) {
+      if(filter != null && filter != '' && file.name.indexOf(filter) < 0)
+        return;
+      var node = '<a href="#" class="list-group-item list-group-item-' +
+        (file.hasXML ? 'success">' : 'warning">') + file.name + '</a>';
+      $('#div_files_list').append(node);
+      c++;
+    });
   }
+  if(c == 0)
+    $('#div_files_list').html('<li class="list-group-item list-group-item-danger">No Image Found!</li>');
+  $('#label_images_num').html(c);
+  if(g_curListItem && $('#div_files_list a:contains(' + g_curListItem.html() + ')').length > 0)
+    $('#div_files_list a:contains(' + g_curListItem.html() + ')').click();
+  else
+    $('#btn_backward').click();
 }
 
 function showToolkit(x, y, showDropdown) {
