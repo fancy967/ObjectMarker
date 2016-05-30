@@ -282,12 +282,20 @@ $(document).ready(function () {
       if (!$(e.target).hasClass('active'))
         $(e.target).addClass('active');
       g_curListItem = $(e.target);
-      if ($('#div_files_list').scrollTop() > $('#div_files_list a.active').position().top ||
-        $('#div_files_list').scrollTop() + $('#div_files_list').height() <
-        $('#div_files_list a.active').position().top + $('#div_files_list a.active').outerHeight()) {
+      // if ($('#div_files_list').scrollTop() > $('#div_files_list a.active').position().top ||
+      //   $('#div_files_list').scrollTop() + $('#div_files_list').height() <
+      //   $('#div_files_list a.active').position().top + $('#div_files_list a.active').outerHeight()) {
+      //   $('#div_files_list').animate({
+      //     scrollTop: $('#div_files_list a.active').position().top + $('#div_files_list a.active').outerHeight() / 2
+      //     - $('#div_files_list').height() / 2
+      //   }, 'fast');
+      // }
+      if ($('#div_files_list a.active').position().top < 0 || $('#div_files_list a.active').position().top +
+        $('#div_files_list a.active').outerHeight() > $('#div_files_list').height()) {
+        console.log('Here');
         $('#div_files_list').animate({
-          scrollTop: $('#div_files_list a.active').position().top + $('#div_files_list a.active').outerHeight() / 2
-          - $('#div_files_list').height() / 2
+          scrollTop: $('#div_files_list').scrollTop() + $('#div_files_list a.active').position().top +
+          $('#div_files_list a.active').outerHeight() / 2 - $('#div_files_list').height() / 2
         }, 'fast');
       }
     }
