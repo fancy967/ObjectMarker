@@ -11,7 +11,7 @@ var g_zoomInWidth = true;
 var g_fileList = null;
 var ignoreScrollEvents = false;
 
-const NEEDCONFIRM = false;
+const NEEDCONFIRM = true;
 const IMG_EXTENSIONS = ['jpeg', 'jpg', 'png'];
 const ALERT_TYPES = ['success', 'info', 'warning', 'danger'];
 const CLASSES_JSON = 'classes.json';

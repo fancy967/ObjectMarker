@@ -1,11 +1,28 @@
 {
   "name": "object-marker",
   "version": "2.4.0",
+  "description": "A tool to easily annotate objects in a image following the PASCAL VOC format",
   "main": "main.js",
   "scripts": {
     "start": "electron main.js"
   },
-  "devDependencies": {
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fancy967/ObjectMarker.git"
+  },
+  "keywords": [
+    "Object",
+    "Marker",
+    "Annotation",
+    "PASCAL",
+    "VOC"
+  ],
+  "author": "fancy967",
+  "dependencies": {
     "xml2js": "*"
+  },
+  "devDependencies": {
+    "xml2js": "*",
+    "electron-prebuilt": "0.37.4"
   }
 }
