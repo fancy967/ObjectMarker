@@ -31,7 +31,8 @@ Shortcut keys
 Screenshots
 ------------
 ![](https://raw.githubusercontent.com/fancy967/Docs/master/objectmarker/objectmarker1.png)
-
+![](https://raw.githubusercontent.com/fancy967/Docs/master/objectmarker/objectmarker2.png)
+![](https://raw.githubusercontent.com/fancy967/Docs/master/objectmarker/objectmarker3.png)
 
 How to run from source
 ------------
@@ -73,7 +74,7 @@ Sample output XML
 How to add custom object class
 ------------
 * Open classes.json and add field according to the following:
-```json
+```
   {
 	    "name": "bicycle",     //class name show on the list,
 	    "value": "bicycle",    //class value store in the xml,
