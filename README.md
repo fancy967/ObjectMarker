@@ -75,10 +75,10 @@ How to add custom object class
 * Open classes.json and add field according to the following:
 ```json
   {
-	    "name": "bicycle", //class name show on the list,
-	    "value": "bicycle", //class value store in the xml,
-	    "count": 0, //(do not change in general),
-	    "fix": 0/ /(the index that the class would be fixed)
+	    "name": "bicycle",     //class name show on the list,
+	    "value": "bicycle",    //class value store in the xml,
+	    "count": 0,            //(do not change in general),
+	    "fix": 0               //(the index that the class would be fixed)
   }
 ```
 
